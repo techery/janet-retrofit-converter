@@ -154,12 +154,18 @@ fun createActionClassDeclaration(name: String,
 }
 
 fun CompilationUnit.save(path: java.nio.file.Path) {
-    val file = File(path.toFile(), this.types.first().name.plus(".java"))
-    val writer = FileWriter(file)
-    writer.write(toString())
-    writer.flush()
-    writer.close()
-    println("File $file saved")
+    var file = path.toFile()
+    if (file.exists() || file.mkdirs()) {
+        file = File(file, this.types.first().name.plus(".java"))
+        with(FileWriter(file)) {
+            write(this@save.toString())
+            flush()
+            close()
+        }
+        println("File $file saved")
+    } else {
+        error("Folder $file couldn't be made")
+    }
 }
 
 inline fun Parameter.toJanetField(action: (imports: MutableList<ImportDeclaration>) -> Unit): FieldDeclaration {
