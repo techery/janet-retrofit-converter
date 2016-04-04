@@ -1,0 +1,38 @@
+apply plugin: 'kotlin'
+apply plugin: 'java'
+apply plugin: 'application'
+
+
+repositories {
+    mavenCentral()
+    maven { url "https://jitpack.io" }
+}
+
+sourceCompatibility = 1.6
+
+sourceSets {
+    main.java.srcDirs += 'src/main/kotlin'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'io.techery.janet.retrofit.RetrofitConverterKt'
+    }
+    baseName = project.parent.name
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+}
+
+dependencies {
+    compile 'com.github.techery.janet:http-service:0.1.0'
+    compile 'args4j:args4j:2.33'
+    compile 'com.github.javaparser:javaparser-core:2.3.0'
+    compile 'com.squareup.retrofit2:retrofit:2.0.1'
+    compile 'com.squareup.okhttp3:okhttp:3.2.0'
+    compile 'org.jetbrains.kotlin:kotlin-stdlib:1.0.1'
+    compile 'org.jetbrains.kotlin:kotlin-reflect:1.0.1'
+}
+
+
+
+
+
