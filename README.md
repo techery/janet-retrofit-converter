@@ -4,7 +4,7 @@ Small tool to generate janet-http actions using retrofit source file
 # How To Use
 
 ```bash
-java -jar janet-retrofit-converter.jar Api.java --package com.test -- output ~/output
+java -jar janet-retrofit-converter.jar Api.java --package com.test --output ~/output
 ```
 
 # Download 
