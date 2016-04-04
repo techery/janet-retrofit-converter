@@ -9,4 +9,4 @@ java -jar janet-retrofit-converter.jar Api.java --package com.test -- output ~/o
 
 # Download 
 
-[link](dist/janet-retrofit-converter.jar)
+[link](dist/janet-retrofit-converter.jar?raw=true)
