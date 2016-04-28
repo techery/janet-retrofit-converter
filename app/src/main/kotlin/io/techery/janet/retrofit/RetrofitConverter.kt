@@ -7,6 +7,10 @@ import com.github.javaparser.ast.ImportDeclaration
 import com.github.javaparser.ast.PackageDeclaration
 import com.github.javaparser.ast.body.*
 import com.github.javaparser.ast.expr.*
+import com.github.javaparser.ast.stmt.BlockStmt
+import com.github.javaparser.ast.stmt.ExpressionStmt
+import com.github.javaparser.ast.stmt.ReturnStmt
+import com.github.javaparser.ast.stmt.Statement
 import com.github.javaparser.ast.type.ClassOrInterfaceType
 import com.github.javaparser.ast.type.Type
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter
@@ -107,23 +111,43 @@ fun createUnit(packageName: String,
     cu.`package` = PackageDeclaration(ASTHelper.createNameExpr(packageName));
     val imports = mutableListOf(ImportDeclaration(ASTHelper.createNameExpr(HttpAction::class.qualifiedName), false, false))
     val classDeclaration = createActionClassDeclaration(name, type, method, path, headers)
+    val constructor = ConstructorDeclaration(ModifierSet.PUBLIC, classDeclaration.name)
     //request fields
-    val fields = ArrayList<FieldDeclaration>()
+    val members = ArrayList<BodyDeclaration>()
+    val constructorStmts = ArrayList<Statement>()
     params.forEach {
-        fields.add(it.toJanetField({ imports.addAll(it) }))
+        val field = it.toJanetField({ imports.addAll(it) })
+        members.add(field)
+        // add constructor param for field
+        val id = field.variables.first().id
+        constructor.parameters.add(Parameter(field.type, id));
+        constructorStmts.add(ExpressionStmt(NameExpr("this.$id = $id")))
     }
+    // add response field
+    val responseFieldName = "response";
     if (!responseType.toString().contains("Void")) {
-        val field = FieldDeclaration(0, responseType, VariableDeclarator(VariableDeclaratorId("response")))
+        val field = FieldDeclaration(0, responseType, VariableDeclarator(VariableDeclaratorId(responseFieldName)))
         field.annotations.add(MarkerAnnotationExpr(NameExpr(Response::class.simpleName)))
         imports.add(ImportDeclaration(ASTHelper.createNameExpr(Response::class.qualifiedName), false, false))
-        fields.add((field))
+        members.add((field))
     }
-    fields.forEach {
+
+    constructor.block = BlockStmt(constructorStmts)
+    members.add(constructor)
+
+    // add response getter
+    val getter = MethodDeclaration(ModifierSet.PUBLIC, responseType, "getResponse")
+    getter.body = BlockStmt(listOf(ReturnStmt(NameExpr("this.$responseFieldName"))))
+    members.add(getter)
+
+    members.forEach {
         sourceImports.filter { it.name.toString().contains(responseType.toString()) }
                 .forEach { imports.add(it) }
         ASTHelper.addMember(classDeclaration, it)
     }
+
     cu.imports = imports.distinct()
+
     ASTHelper.addTypeDeclaration(cu, classDeclaration)
     return cu
 }
