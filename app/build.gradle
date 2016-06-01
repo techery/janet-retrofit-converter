@@ -23,7 +23,7 @@ jar {
 }
 
 dependencies {
-    compile 'com.github.techery.janet:http-service:0.1.0'
+    compile 'com.github.techery.janet-http:service:1.0.4'
     compile 'args4j:args4j:2.33'
     compile 'com.github.javaparser:javaparser-core:2.3.0'
     compile 'com.squareup.retrofit2:retrofit:2.0.1'
